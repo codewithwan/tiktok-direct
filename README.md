@@ -1,105 +1,59 @@
 # tiktok-direct
 
-Library-first TikTok public video metadata extractor.
+`tiktok-direct` is a library-first workspace for extracting public TikTok video metadata. It is designed around one shared Rust implementation package with thin language bindings on top.
 
-This repository is a multi-language library workspace with a shared Rust core
-and planned thin language bindings. There is no CLI target in this repo by
-design.
+## Overview
 
-## Goals
-
-- Provide one shared Rust core for extraction, parsing, normalization, and media
-  URL discovery.
-- Expose bindings for Python, Node.js, and Go.
-- Keep behavior aligned across all language packages.
-- Use only public TikTok page data and public embed data.
-- Avoid login, user account cookies, and authenticated scraping.
+This repository is meant to be consumed as libraries, not as a CLI app. The extraction logic lives in one Rust implementation package, while language-specific bindings expose the same behavior to downstream consumers.
 
 ## Repository Layout
 
-```text
-tiktok-direct/
-  crates/
-    tiktok-direct-core/      Rust core library implementation
-  bindings/
-    python/                  Python binding with PyO3 and maturin
-    node/                    Future Node.js binding
-    go/                      Future Go binding
-  TODO.md                    MVP checklist and roadmap
-```
+- `crates/engine` - shared Rust implementation package
+- `bindings/python` - Python binding built with PyO3 and maturin
+- `bindings/node` - reserved for a future Node.js binding
+- `bindings/go` - reserved for a future Go binding
 
-## Reference Implementation
+## Design Goals
 
-The current Python prototype has been kept outside this folder as:
-
-```text
-tiktok-direct-python-reference/
-```
-
-Use it as a behavior reference while extending the Rust core and bindings.
+- Keep extraction, parsing, normalization, and media discovery in one shared Rust implementation package.
+- Expose the same public behavior through language bindings.
+- Use only public TikTok page responses, public oEmbed data, and temporary challenge cookies derived from public challenge pages.
+- Avoid login flows, user cookies, and authenticated scraping.
+- Keep the repository focused on reusable library packages.
 
 ## Current Status
 
-- Rust core extracts public TikTok video metadata.
+- Public TikTok video metadata extraction is implemented in the Rust implementation package.
 - Public web challenge handling is implemented.
 - Rehydration JSON parsing is implemented.
 - Public oEmbed fallback is implemented.
-- MP4 and MP3 download from extracted public media URLs is implemented.
-- Python binding is implemented.
-- Unit tests, line-count tests, and an ignored live public URL test are present.
+- MP4 and MP3 download support is implemented.
+- The Python binding is implemented.
+- Unit tests, line-count checks, and an ignored live public test are present.
 
-## Python Binding
+## Rust Implementation
 
-Build the wheel:
+The shared Rust package lives in `crates/engine` and exposes the implementation used by the bindings.
 
-```powershell
-cd tiktok-direct\bindings\python
-python -m maturin build --release
-```
+- resolving public TikTok URLs
+- handling public web challenge pages
+- parsing TikTok rehydration JSON and public metadata
+- normalizing extracted fields into typed Rust data
+- discovering MP4, MP3, and thumbnail media URLs
+- downloading public media from the normalized extraction result
 
-Use it from Python:
+It is the implementation layer used by the language bindings and by downstream Rust consumers that want the extraction logic directly.
 
-```python
-from tiktok_direct import TikTokExtractor, download, extract
+## Package Documentation
 
-video = TikTokExtractor().extract("https://vt.tiktok.com/ZSxvYRvoR/")
-same_video = extract("https://vt.tiktok.com/ZSxvYRvoR/")
-print(video["view_count"], same_video["quality"])
+Implementation details, local build steps, and package-specific usage examples live in the package-level README files:
 
-mp4_path = download("https://vt.tiktok.com/ZSxvYRvoR/", "mp4", "downloads")
-mp3_path = TikTokExtractor().download("https://vt.tiktok.com/ZSxvYRvoR/", "mp3", "downloads")
-```
-
-## Rust API
-
-```rust
-use std::path::Path;
-use tiktok_direct_core::{download_media, MediaKind, TikTokExtractor};
-
-let metadata = TikTokExtractor::new().extract("https://vt.tiktok.com/ZSxvYRvoR/")?;
-let mp4 = download_media(&metadata, MediaKind::Mp4, Some(Path::new("downloads")))?;
-let mp3 = download_media(&metadata, MediaKind::Mp3, Some(Path::new("downloads")))?;
-```
-
-## Rust Tests
-
-Default tests avoid live network downloads:
-
-```powershell
-cargo test
-```
-
-Live public extraction and download tests:
-
-```powershell
-cargo test --test live_extract -- --ignored
-```
+- [Python binding README](bindings/python/README.md)
 
 ## Public Data Policy
 
-- No user login.
-- No user-provided account cookies.
+- No login flow.
+- No user-provided cookies.
 - No authenticated scraping.
 - Public TikTok page data and public oEmbed data only.
-- Temporary public challenge cookies may be generated from the public page
-  response when TikTok serves a public web challenge.
+- Temporary challenge cookies may be generated from public challenge pages when TikTok serves a challenge response.

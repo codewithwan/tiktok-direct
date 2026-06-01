@@ -1,4 +1,4 @@
-use tiktok_direct_core::{download_media, ExtractionQuality, MediaKind, TikTokExtractor};
+use tiktok_direct_engine::{download_media, ExtractionQuality, MediaKind, TikTokExtractor};
 
 #[test]
 #[ignore = "hits live public TikTok page"]

@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 
 use serde_json::json;
-use tiktok_direct_core::{list_media_urls, ExtractionQuality, MediaKind, VideoMetadata};
+use tiktok_direct_engine::{list_media_urls, ExtractionQuality, MediaKind, VideoMetadata};
 
 #[test]
 fn lists_mp4_candidates_from_normalized_and_raw_fields() {

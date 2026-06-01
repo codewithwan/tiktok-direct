@@ -1,6 +1,6 @@
 [workspace]
 members = [
-  "crates/tiktok-direct-core",
+  "crates/engine",
   "bindings/python",
 ]
 resolver = "2"

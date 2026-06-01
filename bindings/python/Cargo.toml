@@ -12,5 +12,5 @@ path = "src/lib.rs"
 [dependencies]
 pyo3 = { version = "0.28.3", features = ["extension-module"] }
 serde_json = "1.0.150"
-tiktok-direct-core = { version = "0.1.0", path = "../../crates/tiktok-direct-core" }
+tiktok_direct_engine = { package = "engine", version = "0.1.0", path = "../../crates/engine" }
 

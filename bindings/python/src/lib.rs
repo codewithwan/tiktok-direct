@@ -2,11 +2,11 @@ use pyo3::exceptions::PyRuntimeError;
 use pyo3::prelude::*;
 use pyo3::types::{PyBool, PyDict, PyList};
 use std::path::Path;
-use tiktok_direct_core::{download_media, MediaKind, TikTokExtractor as CoreExtractor};
+use tiktok_direct_engine::{download_media, MediaKind, TikTokExtractor as EngineExtractor};
 
 #[pyclass(name = "TikTokExtractor")]
 struct PyTikTokExtractor {
-    inner: CoreExtractor,
+    inner: EngineExtractor,
 }
 
 #[pymethods]
@@ -14,7 +14,7 @@ impl PyTikTokExtractor {
     #[new]
     fn new() -> Self {
         Self {
-            inner: CoreExtractor::new(),
+            inner: EngineExtractor::new(),
         }
     }
 
@@ -29,7 +29,7 @@ impl PyTikTokExtractor {
     }
 
     fn download(&self, url: &str, kind: &str, output: Option<&str>) -> PyResult<String> {
-        download_from_core(&self.inner, url, kind, output)
+        download_from_engine(&self.inner, url, kind, output)
     }
 }
 
@@ -40,7 +40,7 @@ fn extract(py: Python<'_>, url: &str) -> PyResult<Py<PyAny>> {
 
 #[pyfunction]
 fn download(url: &str, kind: &str, output: Option<&str>) -> PyResult<String> {
-    download_from_core(&CoreExtractor::new(), url, kind, output)
+    download_from_engine(&EngineExtractor::new(), url, kind, output)
 }
 
 #[pymodule]
@@ -51,8 +51,8 @@ fn tiktok_direct(m: &Bound<'_, PyModule>) -> PyResult<()> {
     Ok(())
 }
 
-fn download_from_core(
-    extractor: &CoreExtractor,
+fn download_from_engine(
+    extractor: &EngineExtractor,
     url: &str,
     kind: &str,
     output: Option<&str>,

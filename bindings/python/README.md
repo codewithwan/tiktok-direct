@@ -1,6 +1,6 @@
 # Python Binding
 
-Python binding for the Rust core.
+Python binding for the shared Rust implementation package.
 
 Stack:
 
@@ -15,7 +15,7 @@ python -m maturin build --release
 
 ## Install & Run
 
-Use the Python environment that is already active in your shell. No venv setup is required.
+Use the Python environment that is already active in your shell. No virtual environment is required.
 
 ```powershell
 cd tiktok-direct\bindings\python
@@ -25,7 +25,7 @@ python -m pip install --force-reinstall ..\..\target\wheels\tiktok_direct-0.1.0-
 
 If you already had an older `tiktok-direct` installed, the `--force-reinstall` step replaces it with the local build.
 
-Then run the binding test from the repo root:
+Then run the binding test from the repository root:
 
 ```powershell
 cd binding_test\python_binding_test
