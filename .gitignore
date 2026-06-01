@@ -21,4 +21,9 @@
 .ruff_cache/
 **/.ruff_cache/
 *.rs.bk
+*.egg-info/
+/wheels/
+**/wheels/
+.ipynb_checkpoints/
+
 

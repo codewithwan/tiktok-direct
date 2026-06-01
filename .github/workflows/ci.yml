@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rust-tests:
+    name: Rust Engine Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cargo Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Run Cargo Check
+        run: cargo check --workspace
+
+      - name: Run Cargo Tests
+        run: cargo test --workspace
+
+  python-tests:
+    name: Python Binding Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install maturin mypy
+
+      - name: Build & Install Python Binding
+        run: |
+          cd bindings/python
+          python -m maturin build --release
+          python -m pip install --force-reinstall ../../target/wheels/*.whl
+
+      - name: Run Python Unit Tests
+        run: |
+          cd bindings/python/tests
+          python -m unittest discover -v
+
+      - name: Run Mypy Typecheck
+        run: |
+          cd bindings/python
+          python -m mypy tiktok_direct tests examples
