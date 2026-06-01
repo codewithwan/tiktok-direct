@@ -1,15 +1,28 @@
-# Go Binding
+# tiktok-direct-go
 
-Planned binding for the Rust core.
+Go library for extracting public TikTok video metadata and downloading public media candidates.
 
-Possible strategies:
+## Layout
 
-- C ABI wrapper around Rust core
-- Manual Go port that follows Rust/Python behavior fixtures
+- `*.go`: library package `tiktokdirect`
+- `tests/`: consumer-style tests that import the package
+- `examples/basic_extraction`: metadata example
+- `examples/download_media`: download example
 
-Target API:
+## Usage
 
 ```go
-video, err := tiktokdirect.Extract(ctx, "https://vt.tiktok.com/example/")
+video, err := tiktokdirect.Extract(ctx, "https://www.tiktok.com/@user/video/123")
 ```
 
+```go
+path, err := tiktokdirect.Download(ctx, url, "mp4", "downloads/")
+```
+
+Supported download kinds: `mp4`, `mp3`, `thumbnail`.
+
+## Validate
+
+```powershell
+go test ./...
+```

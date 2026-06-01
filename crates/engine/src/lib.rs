@@ -9,4 +9,4 @@ mod models;
 pub use download::{download_media, list_media_urls, MediaKind};
 pub use error::{Result, TikTokDirectError};
 pub use extractor::TikTokExtractor;
-pub use models::{BrowserProfile, ExtractionQuality, VideoMetadata};
+pub use models::{AuthorStats, BrowserProfile, ExtractionQuality, Mention, VideoMetadata};

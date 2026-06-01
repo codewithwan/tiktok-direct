@@ -1,7 +1,9 @@
 use std::collections::BTreeMap;
 
 use serde_json::json;
-use tiktok_direct_engine::{list_media_urls, ExtractionQuality, MediaKind, VideoMetadata};
+use tiktok_direct_engine::{
+    list_media_urls, AuthorStats, ExtractionQuality, MediaKind, VideoMetadata,
+};
 
 #[test]
 fn lists_mp4_candidates_from_normalized_and_raw_fields() {
@@ -44,6 +46,22 @@ fn lists_mp3_candidates_from_music_fields() {
     );
 }
 
+#[test]
+fn lists_thumbnail_and_avatar_candidates() {
+    let mut metadata = fixture_metadata(BTreeMap::new(), BTreeMap::new(), json!({}));
+    metadata.thumbnail_url = Some("https://cdn/thumb.jpg".to_string());
+    metadata.author_avatar_url = Some("https://cdn/avatar.jpg".to_string());
+
+    assert_eq!(
+        list_media_urls(&metadata, MediaKind::Thumbnail),
+        vec!["https://cdn/thumb.jpg"]
+    );
+    assert_eq!(
+        list_media_urls(&metadata, MediaKind::Avatar),
+        vec!["https://cdn/avatar.jpg"]
+    );
+}
+
 fn fixture_metadata(
     media: BTreeMap<String, serde_json::Value>,
     music: BTreeMap<String, serde_json::Value>,
@@ -59,8 +77,18 @@ fn fixture_metadata(
         author_name: Some("Rainzy".to_string()),
         author_url: None,
         author_unique_id: Some("rainzy".to_string()),
+        author_avatar_url: None,
+        author_stats: AuthorStats {
+            follower_count: None,
+            following_count: None,
+            heart_count: None,
+            video_count: None,
+            digg_count: None,
+        },
         title: Some("caption".to_string()),
         description: Some("caption".to_string()),
+        hashtags: Vec::new(),
+        mentions: Vec::new(),
         image: None,
         view_count: Some(10),
         like_count: Some(2),
@@ -75,8 +103,15 @@ fn fixture_metadata(
         thumbnail_url: None,
         source: Some("fixture".to_string()),
         quality: ExtractionQuality::Complete,
+        reason: None,
+        missing_fields: Vec::new(),
         challenge_solved: false,
         stats: BTreeMap::new(),
+        stats_v2: BTreeMap::new(),
+        status_flags: BTreeMap::new(),
+        location: BTreeMap::new(),
+        analytics: BTreeMap::new(),
+        summary: BTreeMap::new(),
         media,
         music,
         available_json_sources: BTreeMap::new(),

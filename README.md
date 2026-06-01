@@ -6,8 +6,8 @@
 
 * **`crates/engine`**: Shared core Rust package using a modular subsystem design (`net/` and `parser/`).
 * **`bindings/python`**: Thin, highly-optimized Python binding powered by PyO3, Maturin, and asyncio.
-* **`bindings/node`**: (Future expansion) Reserved for high-speed Node.js bindings.
-* **`bindings/go`**: (Future expansion) Reserved for native Go bindings.
+* **`bindings/node`**: Usable Node.js package with `src/`, declarations, tests, and examples.
+* **`bindings/go`**: Usable Go module with library code, tests, and examples.
 
 ---
 
@@ -53,11 +53,37 @@ python -m pip install --force-reinstall ..\..\target\wheels\tiktok_direct-0.1.0-
 
 For advanced API integrations, examples, and async configurations, see the [Python Package Documentation](bindings/python/README.md).
 
+### 3. Go Library
+
+```powershell
+cd bindings/go
+go test ./...
+```
+
+```go
+video, err := tiktokdirect.Extract(ctx, "https://www.tiktok.com/@user/video/123")
+```
+
+### 4. Node.js Library
+
+```powershell
+cd bindings/node
+npm test
+```
+
+```js
+import { extract } from "tiktok-direct";
+
+const video = await extract("https://www.tiktok.com/@user/video/123");
+```
+
 ---
 
 ## Quality Assurance & Verification
 Our pipeline uses strict validation mechanisms to ensure codebase integrity:
 * **Cargo Tests**: Automated execution of all Rust engine and integration suites (`cargo test --workspace`).
 * **Python Tests**: Comprehensive unit tests covering async offloading, concurrent batching, and stub mocks (`python -m unittest discover`).
+* **Go Tests**: Consumer-style package validation (`go test ./...` from `bindings/go`).
+* **Node Tests**: Built-in Node test runner validation (`npm test` from `bindings/node`).
 * **Static Verification**: Strict type assertions through mypy (`python -m mypy tests examples`).
 * **Automatic Code Formatting**: Consolidated code formatting checks integrated through Ruff pre-commit tools.

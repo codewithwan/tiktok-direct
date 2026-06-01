@@ -142,6 +142,14 @@ def download(
     """
     ...
 
+def to_analytics_dict(metadata: Dict[str, Any]) -> Dict[str, Any]:
+    """Return a flat analytics dictionary suitable for CSV/spreadsheets."""
+    ...
+
+def to_summary_dict(metadata: Dict[str, Any]) -> Dict[str, Any]:
+    """Return a compact summary dictionary for logs and CLI output."""
+    ...
+
 async def extract_async(url: str, user_agent: Optional[str] = None, accept_language: Optional[str] = None) -> Dict[str, Any]:
     """Extract public metadata from a TikTok video URL asynchronously.
 

@@ -25,20 +25,7 @@ impl TikTokHttpClient {
         accept: &str,
         cookie: Option<&str>,
     ) -> Result<(String, String)> {
-        let mut headers = HeaderMap::new();
-        headers.insert(USER_AGENT, header_value(&self.profile.user_agent)?);
-        headers.insert(ACCEPT, header_value(accept)?);
-        headers.insert(
-            ACCEPT_LANGUAGE,
-            header_value(&self.profile.accept_language)?,
-        );
-        if let Some(ref sec_ch_ua) = self.profile.sec_ch_ua {
-            headers.insert("sec-ch-ua", header_value(sec_ch_ua)?);
-        }
-        if let Some(ref sec_ch_ua_platform) = self.profile.sec_ch_ua_platform {
-            headers.insert("sec-ch-ua-platform", header_value(sec_ch_ua_platform)?);
-        }
-
+        let mut headers = self.browser_headers(accept)?;
         if let Some(cookie) = cookie {
             headers.insert(COOKIE, header_value(cookie)?);
         }
@@ -54,6 +41,23 @@ impl TikTokHttpClient {
         }
 
         Ok((final_url, response.text()?))
+    }
+
+    fn browser_headers(&self, accept: &str) -> Result<HeaderMap> {
+        let mut headers = HeaderMap::new();
+        headers.insert(USER_AGENT, header_value(&self.profile.user_agent)?);
+        headers.insert(ACCEPT, header_value(accept)?);
+        headers.insert(
+            ACCEPT_LANGUAGE,
+            header_value(&self.profile.accept_language)?,
+        );
+        if let Some(ref sec_ch_ua) = self.profile.sec_ch_ua {
+            headers.insert("sec-ch-ua", header_value(sec_ch_ua)?);
+        }
+        if let Some(ref sec_ch_ua_platform) = self.profile.sec_ch_ua_platform {
+            headers.insert("sec-ch-ua-platform", header_value(sec_ch_ua_platform)?);
+        }
+        Ok(headers)
     }
 }
 

@@ -23,13 +23,28 @@ impl Default for BrowserProfile {
     }
 }
 
-
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum ExtractionQuality {
     Complete,
     Partial,
     Failed,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Mention {
+    pub username: Option<String>,
+    pub display_text: Option<String>,
+    pub user_id: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AuthorStats {
+    pub follower_count: Option<u64>,
+    pub following_count: Option<u64>,
+    pub heart_count: Option<u64>,
+    pub video_count: Option<u64>,
+    pub digg_count: Option<u64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -43,8 +58,12 @@ pub struct VideoMetadata {
     pub author_name: Option<String>,
     pub author_url: Option<String>,
     pub author_unique_id: Option<String>,
+    pub author_avatar_url: Option<String>,
+    pub author_stats: AuthorStats,
     pub title: Option<String>,
     pub description: Option<String>,
+    pub hashtags: Vec<String>,
+    pub mentions: Vec<Mention>,
     pub image: Option<String>,
     pub view_count: Option<u64>,
     pub like_count: Option<u64>,
@@ -59,8 +78,15 @@ pub struct VideoMetadata {
     pub thumbnail_url: Option<String>,
     pub source: Option<String>,
     pub quality: ExtractionQuality,
+    pub reason: Option<String>,
+    pub missing_fields: Vec<String>,
     pub challenge_solved: bool,
     pub stats: BTreeMap<String, Value>,
+    pub stats_v2: BTreeMap<String, Value>,
+    pub status_flags: BTreeMap<String, bool>,
+    pub location: BTreeMap<String, Value>,
+    pub analytics: BTreeMap<String, Value>,
+    pub summary: BTreeMap<String, Value>,
     pub media: BTreeMap<String, Value>,
     pub music: BTreeMap<String, Value>,
     pub available_json_sources: BTreeMap<String, bool>,

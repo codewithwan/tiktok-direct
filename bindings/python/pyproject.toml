@@ -25,6 +25,17 @@ classifiers = [
 Homepage = "https://github.com/codewithwan/tiktok-direct"
 Repository = "https://github.com/codewithwan/tiktok-direct"
 
+[project.optional-dependencies]
+dev = [
+    "mypy>=2.1.0",
+    "pytest>=9.0.3",
+    "pytest-cov>=7.1.0",
+    "ruff>=0.1",
+]
+
+[project.scripts]
+tiktok-direct = "tiktok_direct.cli:main"
+
 [tool.maturin]
 module-name = "tiktok_direct"
 features = ["pyo3/extension-module"]
@@ -32,4 +43,3 @@ features = ["pyo3/extension-module"]
 [tool.mypy]
 explicit_package_bases = true
 mypy_path = "."
-

@@ -84,6 +84,42 @@ def download(
     except Exception as e:
         _raise_mapped_exception(e)
 
+def to_analytics_dict(metadata: Dict[str, Any]) -> Dict[str, Any]:
+    """Return a flat analytics dictionary suitable for CSV/spreadsheets."""
+    stable = {
+        "video_id": metadata.get("video_id"),
+        "username": metadata.get("username"),
+        "author_unique_id": metadata.get("author_unique_id"),
+        "title": metadata.get("title"),
+        "view_count": metadata.get("view_count"),
+        "like_count": metadata.get("like_count"),
+        "comment_count": metadata.get("comment_count"),
+        "repost_count": metadata.get("repost_count"),
+        "duration": metadata.get("duration"),
+        "quality": metadata.get("quality"),
+        "reason": metadata.get("reason"),
+    }
+    stable.update(metadata.get("analytics") or {})
+    return stable
+
+def to_summary_dict(metadata: Dict[str, Any]) -> Dict[str, Any]:
+    """Return a compact summary dictionary for logs and CLI output."""
+    summary = metadata.get("summary")
+    if isinstance(summary, dict) and summary:
+        return dict(summary)
+    return {
+        "video_id": metadata.get("video_id"),
+        "url": metadata.get("webpage_url") or metadata.get("resolved_url"),
+        "author": metadata.get("author_unique_id") or metadata.get("username"),
+        "title": metadata.get("title"),
+        "views": metadata.get("view_count"),
+        "likes": metadata.get("like_count"),
+        "comments": metadata.get("comment_count"),
+        "shares": metadata.get("repost_count"),
+        "duration": metadata.get("duration"),
+        "quality": metadata.get("quality"),
+    }
+
 def _raise_mapped_exception(e: Exception) -> Any:
     msg = str(e)
     if "invalid" in msg.lower() or "parse" in msg.lower() or "url" in msg.lower() or "builder error" in msg.lower():
@@ -99,6 +135,8 @@ __all__ = [
     "TikTokExtractor",
     "extract",
     "download",
+    "to_analytics_dict",
+    "to_summary_dict",
     "AsyncTikTokExtractor",
     "extract_async",
     "download_async",
@@ -108,4 +146,3 @@ __all__ = [
     "ChallengeError",
     "DownloadError",
 ]
-

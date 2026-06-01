@@ -54,56 +54,104 @@ pub fn generate_random_profile() -> BrowserProfile {
     let mut sec_ch_ua_platform = None;
     let mut accept_language = "en-US,en;q=0.9".to_string();
 
-
     match selected_browser {
         "chrome" => {
             if selected_os == "ios" {
                 user_agent = format!("Mozilla/5.0 ({}) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/{}.0.0.0 Mobile/15E148 Safari/605.1.15", os_str, chrome_major);
             } else if selected_os == "android" {
                 user_agent = format!("Mozilla/5.0 ({}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{} Mobile Safari/537.36", os_str, chrome_ver);
-                sec_ch_ua = Some(format!(r#""Google Chrome";v="{}", "Chromium";v="{}", "Not.A/Brand";v="24""#, chrome_major, chrome_major));
+                sec_ch_ua = Some(format!(
+                    r#""Google Chrome";v="{}", "Chromium";v="{}", "Not.A/Brand";v="24""#,
+                    chrome_major, chrome_major
+                ));
                 sec_ch_ua_platform = Some(r#""Android""#.to_string());
                 accept_language = "en-US,en;q=0.9,id;q=0.8".to_string();
             } else {
                 user_agent = format!("Mozilla/5.0 ({}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{} Safari/537.36", os_str, chrome_ver);
-                sec_ch_ua = Some(format!(r#""Google Chrome";v="{}", "Chromium";v="{}", "Not.A/Brand";v="24""#, chrome_major, chrome_major));
-                sec_ch_ua_platform = Some(format!(r#""{}""#, if selected_os == "windows" { "Windows" } else if selected_os == "mac" { "macOS" } else { "Linux" }));
+                sec_ch_ua = Some(format!(
+                    r#""Google Chrome";v="{}", "Chromium";v="{}", "Not.A/Brand";v="24""#,
+                    chrome_major, chrome_major
+                ));
+                sec_ch_ua_platform = Some(format!(
+                    r#""{}""#,
+                    if selected_os == "windows" {
+                        "Windows"
+                    } else if selected_os == "mac" {
+                        "macOS"
+                    } else {
+                        "Linux"
+                    }
+                ));
                 accept_language = "en-US,en;q=0.9,id;q=0.8".to_string();
             }
         }
         "edge" => {
             let edge_major = chrome_major;
-            let edge_ver = format!("{}.0.{}.{}", edge_major, 2000 + ((nanos >> 24) % 500) as u32, 50 + ((nanos >> 26) % 100) as u32);
+            let edge_ver = format!(
+                "{}.0.{}.{}",
+                edge_major,
+                2000 + ((nanos >> 24) % 500) as u32,
+                50 + ((nanos >> 26) % 100) as u32
+            );
             if selected_os == "android" {
                 user_agent = format!("Mozilla/5.0 ({}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{} Mobile Safari/537.36 EdgA/{}", os_str, chrome_ver, edge_ver);
-                sec_ch_ua = Some(format!(r#""Microsoft Edge";v="{}", "Chromium";v="{}", "Not.A/Brand";v="24""#, edge_major, edge_major));
+                sec_ch_ua = Some(format!(
+                    r#""Microsoft Edge";v="{}", "Chromium";v="{}", "Not.A/Brand";v="24""#,
+                    edge_major, edge_major
+                ));
                 sec_ch_ua_platform = Some(r#""Android""#.to_string());
             } else if selected_os == "ios" {
                 user_agent = format!("Mozilla/5.0 ({}) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/605.1.15 Edge/{}", os_str, edge_ver);
             } else {
                 user_agent = format!("Mozilla/5.0 ({}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{} Safari/537.36 Edg/{}", os_str, chrome_ver, edge_ver);
-                sec_ch_ua = Some(format!(r#""Microsoft Edge";v="{}", "Chromium";v="{}", "Not.A/Brand";v="24""#, edge_major, edge_major));
-                sec_ch_ua_platform = Some(format!(r#""{}""#, if selected_os == "windows" { "Windows" } else if selected_os == "mac" { "macOS" } else { "Linux" }));
+                sec_ch_ua = Some(format!(
+                    r#""Microsoft Edge";v="{}", "Chromium";v="{}", "Not.A/Brand";v="24""#,
+                    edge_major, edge_major
+                ));
+                sec_ch_ua_platform = Some(format!(
+                    r#""{}""#,
+                    if selected_os == "windows" {
+                        "Windows"
+                    } else if selected_os == "mac" {
+                        "macOS"
+                    } else {
+                        "Linux"
+                    }
+                ));
                 accept_language = "en-US,en;q=0.9,id;q=0.8".to_string();
             }
         }
         "firefox" => {
             if selected_os == "android" {
-                user_agent = format!("Mozilla/5.0 (Android {}; Mobile; rv:{}) Gecko/{} Firefox/{}", 10 + ((nanos >> 28) % 5) as u32, firefox_ver, firefox_ver, firefox_ver);
+                user_agent = format!(
+                    "Mozilla/5.0 (Android {}; Mobile; rv:{}) Gecko/{} Firefox/{}",
+                    10 + ((nanos >> 28) % 5) as u32,
+                    firefox_ver,
+                    firefox_ver,
+                    firefox_ver
+                );
                 accept_language = "en-US,en;q=0.9,id;q=0.8".to_string();
             } else if selected_os == "ios" {
                 user_agent = format!("Mozilla/5.0 ({}) AppleWebKit/605.1.15 (KHTML, like Gecko) FxiOS/{}.0 Mobile/15E148 Safari/605.1.15", os_str, firefox_ver.split('.').next().unwrap());
             } else {
-                user_agent = format!("Mozilla/5.0 ({}; rv:{}) Gecko/20100101 Firefox/{}", os_str, firefox_ver, firefox_ver);
+                user_agent = format!(
+                    "Mozilla/5.0 ({}; rv:{}) Gecko/20100101 Firefox/{}",
+                    os_str, firefox_ver, firefox_ver
+                );
                 accept_language = "en-US,en;q=0.5".to_string();
             }
         }
         _ => {
-            let target_os = if selected_os == "windows" || selected_os == "linux" || selected_os == "android" {
-                if (nanos >> 30) % 2 == 0 { "mac" } else { "ios" }
-            } else {
-                selected_os
-            };
+            let target_os =
+                if selected_os == "windows" || selected_os == "linux" || selected_os == "android" {
+                    if (nanos >> 30) % 2 == 0 {
+                        "mac"
+                    } else {
+                        "ios"
+                    }
+                } else {
+                    selected_os
+                };
             let apple_os_str = if target_os == "ios" {
                 let major = 15 + ((nanos >> 18) % 3) as u32; // 15 - 17
                 let minor = (nanos >> 20) % 6;

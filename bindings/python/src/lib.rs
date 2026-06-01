@@ -2,7 +2,9 @@ use pyo3::exceptions::PyRuntimeError;
 use pyo3::prelude::*;
 use pyo3::types::{PyBool, PyDict, PyList};
 use std::path::Path;
-use tiktok_direct_engine::{download_media, BrowserProfile, MediaKind, TikTokExtractor as EngineExtractor};
+use tiktok_direct_engine::{
+    download_media, BrowserProfile, MediaKind, TikTokExtractor as EngineExtractor,
+};
 
 #[pyclass(name = "TikTokExtractor")]
 struct PyTikTokExtractor {
@@ -45,7 +47,12 @@ impl PyTikTokExtractor {
 
 #[pyfunction]
 #[pyo3(signature = (url, user_agent=None, accept_language=None))]
-fn extract(py: Python<'_>, url: &str, user_agent: Option<&str>, accept_language: Option<&str>) -> PyResult<Py<PyAny>> {
+fn extract(
+    py: Python<'_>,
+    url: &str,
+    user_agent: Option<&str>,
+    accept_language: Option<&str>,
+) -> PyResult<Py<PyAny>> {
     PyTikTokExtractor::new(user_agent, accept_language).extract(py, url)
 }
 

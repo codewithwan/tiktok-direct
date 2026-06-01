@@ -1,5 +1,7 @@
-use crate::net::{solve_waf_cookie, fetch_oembed, TikTokHttpClient};
-use crate::parser::{parse_url_parts, select_item, PageJsonSources, normalize_item, merge_oembed, evaluate_quality};
+use crate::net::{fetch_oembed, solve_waf_cookie, TikTokHttpClient};
+use crate::parser::{
+    finalize_metadata, merge_oembed, normalize_item, parse_url_parts, select_item, PageJsonSources,
+};
 use crate::{BrowserProfile, Result, VideoMetadata};
 
 #[derive(Debug, Clone)]
@@ -56,7 +58,7 @@ impl TikTokExtractor {
             merge_oembed(&mut metadata, &oembed);
         }
 
-        metadata.quality = evaluate_quality(&metadata);
+        finalize_metadata(&mut metadata);
         Ok(metadata)
     }
 }
