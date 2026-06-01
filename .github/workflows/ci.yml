@@ -41,13 +41,16 @@ jobs:
         run: cargo fmt --all -- --check
 
       - name: clippy (deny warnings)
-        run: cargo clippy --workspace --all-targets --all-features -- -D warnings
+        # Exclude the pyo3 cdylib — it requires Python linked at build time
+        # and can't be built standalone via plain cargo on macOS/Windows.
+        # The Python binding is fully tested in the dedicated 'python' job.
+        run: cargo clippy --workspace --exclude tiktok-direct-python --all-targets -- -D warnings
 
       - name: build
-        run: cargo build --workspace --all-features
+        run: cargo build --workspace --exclude tiktok-direct-python
 
       - name: test
-        run: cargo test --workspace --all-features -- --nocapture
+        run: cargo test --workspace --exclude tiktok-direct-python -- --nocapture
 
   # ── Python ──────────────────────────────────────────────────────────────────
   python:
@@ -82,17 +85,32 @@ jobs:
           cd bindings/python
           python -m ruff check . || true
 
-      - name: Build & install in-place (maturin develop)
-        # maturin develop compiles the native .so and copies it directly into
-        # bindings/python/tiktok_direct/, so the local package dir IS the
-        # installed package — no wheel / sys.path shadowing issues.
+      - name: Build wheel (maturin)
+        # `maturin build` (unlike `maturin develop`) does NOT require a
+        # virtualenv. It detects the Python set up by setup-python above
+        # and produces a cpXY-tagged wheel in target/wheels/.
         run: |
           cd bindings/python
-          python -m maturin develop --release
+          python -m maturin build --release
+
+      - name: Install wheel
+        run: |
+          # Resolve the exact wheel for this Python version so the glob never
+          # accidentally matches a stale wheel from another matrix version.
+          PYVER=$(python -c "import sys; print(f'cp{sys.version_info.major}{sys.version_info.minor}')")
+          WHEEL=$(ls target/wheels/*${PYVER}*.whl 2>/dev/null | head -n1)
+          if [ -z "$WHEEL" ]; then
+            echo "No wheel found for ${PYVER} in target/wheels/"
+            ls target/wheels/ || true
+            exit 1
+          fi
+          echo "Installing: $WHEEL"
+          pip install --force-reinstall "$WHEEL"
 
       - name: pytest + coverage
-        # Run from workspace root so pytest doesn't accidentally import the
-        # bare tiktok_direct/ source dir before the .so is resolved.
+        # Run from workspace root so sys.path resolves tiktok_direct from
+        # site-packages (with the .so) NOT from bindings/python/tiktok_direct/
+        # (the bare source dir that imports the missing .so via relative import).
         run: |
           python -m pytest bindings/python/tests/ -v --tb=short \
             --cov=tiktok_direct --cov-report=term-missing \
