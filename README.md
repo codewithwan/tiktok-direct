@@ -1,23 +1,25 @@
 # tiktok-direct
 
-`tiktok-direct` is a high-performance, library-first workspace for extracting public TikTok video metadata and media. It is designed around a single shared, highly-modular Rust engine core with thin, zero-dependency language bindings on top.
+`tiktok-direct` is a high-performance, library-first workspace for extracting public TikTok video metadata and media. It is designed around one shared, highly-modular Rust engine core with language bindings on top.
 
 ## Repository Layout
 
 * **`crates/engine`**: Shared core Rust package using a modular subsystem design (`net/` and `parser/`).
 * **`bindings/python`**: Thin, highly-optimized Python binding powered by PyO3, Maturin, and asyncio.
-* **`bindings/node`**: Usable Node.js package with `src/`, declarations, tests, and examples.
+* **`crates/gateway`**: Small Rust CLI bridge used by runtimes that should delegate live extraction back to the Rust engine.
+* **`bindings/node`**: Usable Node.js package with TypeScript declarations, tests, examples, and live extraction routed through the Rust gateway.
 * **`bindings/go`**: Usable Go module with library code, tests, and examples.
 
 ---
 
 ## Key Framework Features
 
-* **Dynamic WAF Evasion / Rotation**: Integrates organic browser profile simulation (User-Agent, Accept-Language, Sec-CH-UA client-hints) driven by high-entropy nanosecond resolution.
+* **Single Rust Browser Profile Layer**: Browser profile rotation lives in the Rust engine. Python uses it natively, and Node live extraction delegates to the Rust gateway instead of maintaining its own browser-profile logic.
 * **Native Challenge Solving**: Built-in, high-speed SHA-256 cookie challenge solver to transparently bypass TikTok's Web Application Firewall (WAF).
-* **Asynchronous Execution**: Fully native Python `asyncio` wrappers supporting non-blocking concurrent events inside modern web apps (FastAPI, Sanic, etc.).
-* **Parallel Batch Pipelines**: High-speed concurrent scraping leveraging robust worker ThreadPools with isolated error mappings.
-* **Clean Exception Mappings**: Native Python exception hierarchy (`InvalidURLError`, `ChallengeError`, `DownloadError`) for predictable error handling.
+* **Python Binding**: PyO3-backed sync helpers, async wrappers, batch extraction, downloads, helper dicts, typed stubs, examples, and unit tests.
+* **Go Binding**: Importable Go module with extractor helpers, reusable extractor struct, downloads, examples, and consumer-style package tests.
+* **Node Binding**: ESM package with TypeScript declarations, extractor helpers, downloads, Rust gateway bridge, examples, and Node test runner coverage.
+* **External Binding Tests**: Python, Go, and Node each have live consumer tests outside the package folders with per-request timing and download output checks.
 
 ---
 
@@ -36,7 +38,7 @@ use tiktok_direct_engine::{TikTokExtractor, MediaKind, download_media};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let extractor = TikTokExtractor::new();
-    let metadata = extractor.extract("https://vt.tiktok.com/ZSxvYRvoR/")?;
+    let metadata = extractor.extract("https://vt.tiktok.com/example/")?;
     println!("Title: {:?}", metadata.title);
     Ok(())
 }
@@ -51,7 +53,7 @@ python -m maturin build --release
 python -m pip install --force-reinstall ..\..\target\wheels\tiktok_direct-0.1.0-cp312-cp312-win_amd64.whl
 ```
 
-For advanced API integrations, examples, and async configurations, see the [Python Package Documentation](bindings/python/README.md).
+Full Python API, examples, async usage, batch helpers, downloads, and error handling are documented in [bindings/python/README.md](bindings/python/README.md).
 
 ### 3. Go Library
 
@@ -61,12 +63,16 @@ go test ./...
 ```
 
 ```go
-video, err := tiktokdirect.Extract(ctx, "https://www.tiktok.com/@user/video/123")
+video, err := tiktokdirect.Extract(ctx, "https://vt.tiktok.com/example/")
 ```
+
+Full Go API, examples, downloads, validation, and native-engine direction are documented in [bindings/go/README.md](bindings/go/README.md).
 
 ### 4. Node.js Library
 
 ```powershell
+cd ..\..
+cargo build --release -p tiktok-direct-gateway
 cd bindings/node
 npm test
 ```
@@ -74,16 +80,17 @@ npm test
 ```js
 import { extract } from "tiktok-direct";
 
-const video = await extract("https://www.tiktok.com/@user/video/123");
+const video = await extract("https://vt.tiktok.com/example/");
 ```
 
----
+Full Node API, examples, gateway build notes, downloads, and validation are documented in [bindings/node/README.md](bindings/node/README.md).
+
 
 ## Quality Assurance & Verification
 Our pipeline uses strict validation mechanisms to ensure codebase integrity:
 * **Cargo Tests**: Automated execution of all Rust engine and integration suites (`cargo test --workspace`).
-* **Python Tests**: Comprehensive unit tests covering async offloading, concurrent batching, and stub mocks (`python -m unittest discover`).
+* **Python Tests**: Unit tests covering async offloading, concurrent batching, and stub mocks (`python -m unittest discover -s bindings/python/tests -p "test_*.py"`).
 * **Go Tests**: Consumer-style package validation (`go test ./...` from `bindings/go`).
 * **Node Tests**: Built-in Node test runner validation (`npm test` from `bindings/node`).
-* **Static Verification**: Strict type assertions through mypy (`python -m mypy tests examples`).
-* **Automatic Code Formatting**: Consolidated code formatting checks integrated through Ruff pre-commit tools.
+* **External Binding Tests**: Live consumer checks live under `../binding_test` and write media into each binding's own `downloads` folder.
+* **Formatting**: Rust uses `cargo fmt`; Go uses `gofmt`; Node code is kept ESM-only and covered by `node --test`.

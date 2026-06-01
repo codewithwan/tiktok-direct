@@ -40,14 +40,14 @@ Designed for standard synchronous pipelines, scripts, or offline scrapers:
 ```python
 from tiktok_direct import TikTokExtractor, extract, download
 
-url = "https://www.tiktok.com/@user/video/7645289995820895509"
+url = "https://vt.tiktok.com/example/"
 
-# Option A: Helper function (uses dynamic User-Agent rotation)
+# Option A: Helper function (uses Rust browser-profile rotation)
 metadata = extract(url)
 print(f"Title: {metadata['title']}")
 print(f"Likes: {metadata['like_count']}")
 
-# Option B: Object-oriented Extractor with custom headers
+# Option B: Object-oriented Extractor with custom request settings
 extractor = TikTokExtractor(
     user_agent="Mozilla/5.0 CustomUA/1.0",
     accept_language="id-ID,id;q=0.9"
@@ -67,7 +67,7 @@ import asyncio
 from tiktok_direct import AsyncTikTokExtractor, extract_async, download_async
 
 async def main():
-    url = "https://www.tiktok.com/@user/video/7645289995820895509"
+    url = "https://vt.tiktok.com/example/"
     
     # Helper async call
     metadata = await extract_async(url)
@@ -91,8 +91,7 @@ Process list collections in parallel utilizing thread pools. Individual exceptio
 from tiktok_direct import BatchExtractor, InvalidURLError
 
 urls = [
-    "https://www.tiktok.com/@user/video/7111111111111111111",
-    "https://www.tiktok.com/@user/video/7222222222222222222",
+    "https://vt.tiktok.com/example/",
     "invalid-url"
 ]
 

@@ -1,11 +1,13 @@
 use tiktok_direct_engine::{download_media, ExtractionQuality, MediaKind, TikTokExtractor};
 
+fn live_url() -> String {
+    std::env::var("TIKTOK_DIRECT_LIVE_URL").expect("set TIKTOK_DIRECT_LIVE_URL to run live tests")
+}
+
 #[test]
 #[ignore = "hits live public TikTok page"]
 fn extracts_public_short_url() {
-    let metadata = TikTokExtractor::new()
-        .extract("https://vt.tiktok.com/ZSxvYRvoR/")
-        .unwrap();
+    let metadata = TikTokExtractor::new().extract(&live_url()).unwrap();
 
     assert_eq!(metadata.quality, ExtractionQuality::Complete);
     assert!(metadata.video_id.is_some());
@@ -17,9 +19,7 @@ fn extracts_public_short_url() {
 #[test]
 #[ignore = "hits live public TikTok page and downloads media"]
 fn downloads_public_mp4_and_mp3() {
-    let metadata = TikTokExtractor::new()
-        .extract("https://vt.tiktok.com/ZSxvYRvoR/")
-        .unwrap();
+    let metadata = TikTokExtractor::new().extract(&live_url()).unwrap();
     let dir = std::env::temp_dir().join("tiktok-direct-live-download-test");
     let _ = std::fs::remove_dir_all(&dir);
     std::fs::create_dir_all(&dir).unwrap();

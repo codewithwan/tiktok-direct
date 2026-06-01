@@ -9,7 +9,7 @@ from tiktok_direct import TikTokExtractor, download
 
 def main():
     # Example video URL (uses a public video)
-    url = "https://vt.tiktok.com/ZSxvYRvoR/"
+    url = "https://vt.tiktok.com/example/"
     output_dir = "downloads"
 
     # Ensure output directory exists

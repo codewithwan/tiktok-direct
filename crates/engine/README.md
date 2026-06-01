@@ -10,12 +10,12 @@ The engine is built around a modern, highly modular subsystem design:
   * `client.rs`: Manages high-performance HTTP transport (`reqwest`), custom header injection, and cookie containers.
   * `ua.rs`: Dynamically constructs organic, WAF-evading browser user-agent profiles and platform client hints based on system entropy.
   * `challenge.rs`: Solves native public TikTok Web Application Firewall (WAF) cookie challenges asynchronously.
-  * `oembed.rs`: Consumes the public oEmbed endpoints as a reliable fallback when pages are severely restricted.
+  * `oembed.rs`: Consumes the public oEmbed endpoints as a secondary metadata source when pages are severely restricted.
 * **`parser/` (Parsing & Extraction Layer)**:
   * `html.rs`: Heavy-duty HTML scanner extracting rehydration JSON states (`SIGI_STATE`, `__UNIVERSAL_DATA_FOR_REHYDRATION__`, `__NEXT_DATA__`).
   * `normalize/`: Translates raw unstructured JSON values into clean, standardized types and evaluates extraction completeness metrics.
 * **Core API**:
-  * `extractor.rs`: Primary orchestration pipeline managing requests, WAF solving, extraction, and fallback mechanisms.
+  * `extractor.rs`: Primary orchestration pipeline managing requests, WAF solving, extraction, retries, and secondary metadata sources.
   * `download.rs`: Media candidate resolution and parallel mp3/mp4 file downloads.
   * `models.rs`: Strongly typed representation of `VideoMetadata`, `BrowserProfile`, and validation flags.
   * `error.rs`: Strongly typed `TikTokDirectError` enum mappings.
@@ -40,7 +40,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let extractor = TikTokExtractor::new();
 
     // 2. Extract video metadata
-    let url = "https://vt.tiktok.com/ZSxvYRvoR/";
+    let url = "https://vt.tiktok.com/example/";
     let metadata = extractor.extract(url)?;
 
     if let Some(title) = &metadata.title {

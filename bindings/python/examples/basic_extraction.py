@@ -8,7 +8,7 @@ from tiktok_direct import TikTokExtractor, extract
 
 def main():
     # Example video URL (uses a public video)
-    url = "https://vt.tiktok.com/ZSxvYRvoR/"
+    url = "https://vt.tiktok.com/example/"
 
     print(f"Extracting metadata from: {url}\n")
 

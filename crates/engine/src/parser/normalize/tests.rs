@@ -29,7 +29,7 @@ fn normalizes_core_stats_and_media() {
     });
     let parts = UrlParts {
         host: Some("www.tiktok.com".to_string()),
-        pathname: Some("/@tester/video/123".to_string()),
+        pathname: Some("/@example/video/123".to_string()),
         video_id: Some("123".to_string()),
         username: Some("tester".to_string()),
     };

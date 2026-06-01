@@ -151,8 +151,8 @@ mod tests {
 
     #[test]
     fn parses_video_id_and_username() {
-        let parts = parse_url_parts("", "https://www.tiktok.com/@rainzy/video/123456");
+        let parts = parse_url_parts("", "https://www.tiktok.com/@example/video/123456");
         assert_eq!(parts.video_id.as_deref(), Some("123456"));
-        assert_eq!(parts.username.as_deref(), Some("rainzy"));
+        assert_eq!(parts.username.as_deref(), Some("example"));
     }
 }
