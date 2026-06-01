@@ -1,5 +1,5 @@
-use crate::normalize::normalize_item;
-use crate::parsing::UrlParts;
+use crate::parser::normalize::normalize_item;
+use crate::parser::html::UrlParts;
 
 #[test]
 fn normalizes_core_stats_and_media() {

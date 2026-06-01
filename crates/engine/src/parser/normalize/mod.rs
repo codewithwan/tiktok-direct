@@ -5,7 +5,7 @@ use serde_json::Value;
 use std::collections::BTreeMap;
 
 use crate::models::{ExtractionQuality, VideoMetadata};
-use crate::parsing::UrlParts;
+use crate::parser::html::UrlParts;
 use crate::Result;
 use fields::{fill, string_field, u64_field};
 use maps::{map_media, map_music, map_stats, pick_url, raw_keys};

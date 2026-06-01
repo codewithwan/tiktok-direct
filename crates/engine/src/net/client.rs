@@ -32,6 +32,13 @@ impl TikTokHttpClient {
             ACCEPT_LANGUAGE,
             header_value(&self.profile.accept_language)?,
         );
+        if let Some(ref sec_ch_ua) = self.profile.sec_ch_ua {
+            headers.insert("sec-ch-ua", header_value(sec_ch_ua)?);
+        }
+        if let Some(ref sec_ch_ua_platform) = self.profile.sec_ch_ua_platform {
+            headers.insert("sec-ch-ua-platform", header_value(sec_ch_ua_platform)?);
+        }
+
         if let Some(cookie) = cookie {
             headers.insert(COOKIE, header_value(cookie)?);
         }

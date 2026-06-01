@@ -1,7 +1,7 @@
 use serde_json::Value;
 use url::form_urlencoded;
 
-use crate::http::TikTokHttpClient;
+use crate::net::TikTokHttpClient;
 use crate::Result;
 
 pub fn fetch_oembed(client: &TikTokHttpClient, url: &str) -> Result<Value> {

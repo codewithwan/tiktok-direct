@@ -2,7 +2,7 @@ use pyo3::exceptions::PyRuntimeError;
 use pyo3::prelude::*;
 use pyo3::types::{PyBool, PyDict, PyList};
 use std::path::Path;
-use tiktok_direct_engine::{download_media, MediaKind, TikTokExtractor as EngineExtractor};
+use tiktok_direct_engine::{download_media, BrowserProfile, MediaKind, TikTokExtractor as EngineExtractor};
 
 #[pyclass(name = "TikTokExtractor")]
 struct PyTikTokExtractor {
@@ -12,9 +12,19 @@ struct PyTikTokExtractor {
 #[pymethods]
 impl PyTikTokExtractor {
     #[new]
-    fn new() -> Self {
+    #[pyo3(signature = (user_agent=None, accept_language=None))]
+    fn new(user_agent: Option<&str>, accept_language: Option<&str>) -> Self {
+        let mut profile = BrowserProfile::default();
+        if let Some(ua) = user_agent {
+            profile.user_agent = ua.to_string();
+            profile.sec_ch_ua = None;
+            profile.sec_ch_ua_platform = None;
+        }
+        if let Some(lang) = accept_language {
+            profile.accept_language = lang.to_string();
+        }
         Self {
-            inner: EngineExtractor::new(),
+            inner: EngineExtractor::with_profile(profile),
         }
     }
 
@@ -34,13 +44,30 @@ impl PyTikTokExtractor {
 }
 
 #[pyfunction]
-fn extract(py: Python<'_>, url: &str) -> PyResult<Py<PyAny>> {
-    PyTikTokExtractor::new().extract(py, url)
+#[pyo3(signature = (url, user_agent=None, accept_language=None))]
+fn extract(py: Python<'_>, url: &str, user_agent: Option<&str>, accept_language: Option<&str>) -> PyResult<Py<PyAny>> {
+    PyTikTokExtractor::new(user_agent, accept_language).extract(py, url)
 }
 
 #[pyfunction]
-fn download(url: &str, kind: &str, output: Option<&str>) -> PyResult<String> {
-    download_from_engine(&EngineExtractor::new(), url, kind, output)
+#[pyo3(signature = (url, kind, output=None, user_agent=None, accept_language=None))]
+fn download(
+    url: &str,
+    kind: &str,
+    output: Option<&str>,
+    user_agent: Option<&str>,
+    accept_language: Option<&str>,
+) -> PyResult<String> {
+    let mut profile = BrowserProfile::default();
+    if let Some(ua) = user_agent {
+        profile.user_agent = ua.to_string();
+        profile.sec_ch_ua = None;
+        profile.sec_ch_ua_platform = None;
+    }
+    if let Some(lang) = accept_language {
+        profile.accept_language = lang.to_string();
+    }
+    download_from_engine(&EngineExtractor::with_profile(profile), url, kind, output)
 }
 
 #[pymodule]

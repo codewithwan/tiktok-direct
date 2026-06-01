@@ -11,23 +11,18 @@ pub struct BrowserProfile {
     pub sec_ch_ua_platform: Option<String>,
 }
 
-impl Default for BrowserProfile {
-    fn default() -> Self {
-        Self {
-            user_agent: concat!(
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) ",
-                "AppleWebKit/537.36 (KHTML, like Gecko) ",
-                "Chrome/124.0.0.0 Safari/537.36"
-            )
-            .to_string(),
-            accept_language: "en-US,en;q=0.9,id;q=0.8".to_string(),
-            sec_ch_ua: Some(
-                r#""Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99""#.to_string(),
-            ),
-            sec_ch_ua_platform: Some(r#""Windows""#.to_string()),
-        }
+impl BrowserProfile {
+    pub fn random() -> Self {
+        crate::net::ua::generate_random_profile()
     }
 }
+
+impl Default for BrowserProfile {
+    fn default() -> Self {
+        Self::random()
+    }
+}
+
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]

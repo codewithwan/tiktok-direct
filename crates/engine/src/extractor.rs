@@ -1,8 +1,5 @@
-use crate::challenge::solve_waf_cookie;
-use crate::http::TikTokHttpClient;
-use crate::normalize::{evaluate_quality, merge_oembed, normalize_item};
-use crate::oembed::fetch_oembed;
-use crate::parsing::{parse_url_parts, select_item, PageJsonSources};
+use crate::net::{solve_waf_cookie, fetch_oembed, TikTokHttpClient};
+use crate::parser::{parse_url_parts, select_item, PageJsonSources, normalize_item, merge_oembed, evaluate_quality};
 use crate::{BrowserProfile, Result, VideoMetadata};
 
 #[derive(Debug, Clone)]
