@@ -23,7 +23,7 @@ class TestTikTokDownload(unittest.TestCase):
         
         extractor = TikTokExtractor()
         try:
-            path = extractor.download(URL, "mp4", out_dir)
+            path = extractor.download(URL, "mp4", str(out_dir))
             
             self.assertTrue(os.path.exists(path))
             self.assertTrue(os.path.getsize(path) > 0)

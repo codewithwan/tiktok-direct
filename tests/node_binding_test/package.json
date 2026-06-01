@@ -1,0 +1,15 @@
+{
+  "name": "node-binding-test",
+  "version": "1.0.0",
+  "description": "External consumer test for the tiktok-direct Node.js binding",
+  "type": "module",
+  "scripts": {
+    "test": "node test_binding.js"
+  },
+  "dependencies": {
+    "tiktok-direct": "file:../../bindings/node"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
