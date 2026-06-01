@@ -1,0 +1,13 @@
+[package]
+name = "tiktok-direct-gateway"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "tiktok-direct-gateway"
+path = "src/main.rs"
+
+[dependencies]
+serde_json = "1.0.150"
+tiktok_direct_engine = { package = "engine", version = "0.1.0", path = "../engine" }

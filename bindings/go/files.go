@@ -1,6 +1,7 @@
 package tiktokdirect
 
 import (
+	"os"
 	"path/filepath"
 	"strings"
 )
@@ -8,6 +9,9 @@ import (
 func outputPath(meta map[string]any, kind, output string) string {
 	if output == "" {
 		output = defaultFilename(meta, kind)
+	}
+	if info, err := os.Stat(output); err == nil && info.IsDir() {
+		return filepath.Join(output, defaultFilename(meta, kind))
 	}
 	if strings.HasSuffix(output, "/") || strings.HasSuffix(output, "\\") {
 		return filepath.Join(output, defaultFilename(meta, kind))

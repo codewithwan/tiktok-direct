@@ -16,17 +16,8 @@ impl PyTikTokExtractor {
     #[new]
     #[pyo3(signature = (user_agent=None, accept_language=None))]
     fn new(user_agent: Option<&str>, accept_language: Option<&str>) -> Self {
-        let mut profile = BrowserProfile::default();
-        if let Some(ua) = user_agent {
-            profile.user_agent = ua.to_string();
-            profile.sec_ch_ua = None;
-            profile.sec_ch_ua_platform = None;
-        }
-        if let Some(lang) = accept_language {
-            profile.accept_language = lang.to_string();
-        }
         Self {
-            inner: EngineExtractor::with_profile(profile),
+            inner: engine_from_options(user_agent, accept_language),
         }
     }
 
@@ -43,6 +34,23 @@ impl PyTikTokExtractor {
     fn download(&self, url: &str, kind: &str, output: Option<&str>) -> PyResult<String> {
         download_from_engine(&self.inner, url, kind, output)
     }
+}
+
+fn engine_from_options(user_agent: Option<&str>, accept_language: Option<&str>) -> EngineExtractor {
+    if user_agent.is_none() && accept_language.is_none() {
+        return EngineExtractor::new();
+    }
+
+    let mut profile = BrowserProfile::default();
+    if let Some(ua) = user_agent {
+        profile.user_agent = ua.to_string();
+        profile.sec_ch_ua = None;
+        profile.sec_ch_ua_platform = None;
+    }
+    if let Some(lang) = accept_language {
+        profile.accept_language = lang.to_string();
+    }
+    EngineExtractor::with_profile(profile)
 }
 
 #[pyfunction]
@@ -65,16 +73,12 @@ fn download(
     user_agent: Option<&str>,
     accept_language: Option<&str>,
 ) -> PyResult<String> {
-    let mut profile = BrowserProfile::default();
-    if let Some(ua) = user_agent {
-        profile.user_agent = ua.to_string();
-        profile.sec_ch_ua = None;
-        profile.sec_ch_ua_platform = None;
-    }
-    if let Some(lang) = accept_language {
-        profile.accept_language = lang.to_string();
-    }
-    download_from_engine(&EngineExtractor::with_profile(profile), url, kind, output)
+    download_from_engine(
+        &engine_from_options(user_agent, accept_language),
+        url,
+        kind,
+        output,
+    )
 }
 
 #[pymodule]
@@ -93,13 +97,22 @@ fn download_from_engine(
 ) -> PyResult<String> {
     let media_kind =
         MediaKind::parse(kind).map_err(|err| PyRuntimeError::new_err(err.to_string()))?;
-    let metadata = extractor
-        .extract(url)
-        .map_err(|err| PyRuntimeError::new_err(err.to_string()))?;
     let output = output.map(Path::new);
-    let path = download_media(&metadata, media_kind, output)
-        .map_err(|err| PyRuntimeError::new_err(err.to_string()))?;
-    Ok(path.to_string_lossy().to_string())
+    let mut last_error = None;
+
+    for _ in 0..5 {
+        let metadata = extractor
+            .extract(url)
+            .map_err(|err| PyRuntimeError::new_err(err.to_string()))?;
+        match download_media(&metadata, media_kind, output) {
+            Ok(path) => return Ok(path.to_string_lossy().to_string()),
+            Err(err) => last_error = Some(err.to_string()),
+        }
+    }
+
+    Err(PyRuntimeError::new_err(
+        last_error.unwrap_or_else(|| "media download failed".to_string()),
+    ))
 }
 
 fn json_to_py(py: Python<'_>, value: &serde_json::Value) -> PyResult<Py<PyAny>> {

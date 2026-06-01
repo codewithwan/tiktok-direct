@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"html"
 	"io"
 	"net/http"
@@ -15,7 +16,6 @@ import (
 
 type Extractor struct {
 	Client        *http.Client
-	UserAgent     string
 	AcceptLang    string
 	UseOEmbed     bool
 	CommentPolicy string
@@ -24,7 +24,6 @@ type Extractor struct {
 func New() *Extractor {
 	return &Extractor{
 		Client:     &http.Client{Timeout: 20 * time.Second},
-		UserAgent:  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36",
 		AcceptLang: "en-US,en;q=0.9,id;q=0.8",
 		UseOEmbed:  true,
 	}
@@ -35,6 +34,26 @@ func Extract(ctx context.Context, videoURL string) (map[string]any, error) {
 }
 
 func (e *Extractor) Extract(ctx context.Context, videoURL string) (map[string]any, error) {
+	var best map[string]any
+	var last error
+	for attempt := 0; attempt < 5; attempt++ {
+		meta, err := e.extractOnce(ctx, videoURL)
+		if err != nil {
+			last = err
+			continue
+		}
+		if fmt.Sprintf("%v", meta["quality"]) == "complete" {
+			return meta, nil
+		}
+		best = meta
+	}
+	if best != nil {
+		return best, nil
+	}
+	return nil, last
+}
+
+func (e *Extractor) extractOnce(ctx context.Context, videoURL string) (map[string]any, error) {
 	finalURL, body, err := e.fetchText(ctx, videoURL, "text/html")
 	if err != nil {
 		return nil, err
@@ -54,6 +73,7 @@ func (e *Extractor) Extract(ctx context.Context, videoURL string) (map[string]an
 	if e.UseOEmbed {
 		mergeOEmbed(ctx, e, meta, finalURL)
 	}
+	meta["quality"] = quality(meta)
 	return meta, nil
 }
 
@@ -62,7 +82,6 @@ func (e *Extractor) fetchText(ctx context.Context, target, accept string) (strin
 	if err != nil {
 		return "", "", err
 	}
-	req.Header.Set("User-Agent", e.UserAgent)
 	req.Header.Set("Accept-Language", e.AcceptLang)
 	req.Header.Set("Accept", accept)
 	resp, err := e.Client.Do(req)

@@ -1350,6 +1350,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "tiktok-direct-gateway"
+version = "0.1.0"
+dependencies = [
+ "engine",
+ "serde_json",
+]
+
+[[package]]
 name = "tiktok-direct-python"
 version = "0.1.0"
 dependencies = [

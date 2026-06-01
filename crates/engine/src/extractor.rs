@@ -2,11 +2,12 @@ use crate::net::{fetch_oembed, solve_waf_cookie, TikTokHttpClient};
 use crate::parser::{
     finalize_metadata, merge_oembed, normalize_item, parse_url_parts, select_item, PageJsonSources,
 };
-use crate::{BrowserProfile, Result, VideoMetadata};
+use crate::{BrowserProfile, ExtractionQuality, Result, VideoMetadata};
 
 #[derive(Debug, Clone)]
 pub struct TikTokExtractor {
     profile: BrowserProfile,
+    rotate_profile: bool,
     timeout_seconds: u64,
 }
 
@@ -14,6 +15,7 @@ impl TikTokExtractor {
     pub fn new() -> Self {
         Self {
             profile: BrowserProfile::default(),
+            rotate_profile: true,
             timeout_seconds: 20,
         }
     }
@@ -21,6 +23,7 @@ impl TikTokExtractor {
     pub fn with_profile(profile: BrowserProfile) -> Self {
         Self {
             profile,
+            rotate_profile: false,
             timeout_seconds: 20,
         }
     }
@@ -30,8 +33,39 @@ impl TikTokExtractor {
         self
     }
 
-    pub fn extract(&self, _url: &str) -> Result<VideoMetadata> {
-        let client = TikTokHttpClient::new(self.profile.clone(), self.timeout_seconds)?;
+    pub fn extract(&self, url: &str) -> Result<VideoMetadata> {
+        let mut best = None;
+        let mut last_error = None;
+        for _ in 0..5 {
+            let metadata = match self.extract_once(url) {
+                Ok(metadata) => metadata,
+                Err(err) => {
+                    last_error = Some(err);
+                    continue;
+                }
+            };
+            if metadata.quality == ExtractionQuality::Complete {
+                return Ok(metadata);
+            }
+            best = Some(metadata);
+        }
+        if let Some(best) = best {
+            Ok(best)
+        } else {
+            Err(last_error.expect("at least one extraction attempt ran"))
+        }
+    }
+
+    fn profile_for_attempt(&self) -> BrowserProfile {
+        if self.rotate_profile {
+            BrowserProfile::random()
+        } else {
+            self.profile.clone()
+        }
+    }
+
+    fn extract_once(&self, _url: &str) -> Result<VideoMetadata> {
+        let client = TikTokHttpClient::new(self.profile_for_attempt(), self.timeout_seconds)?;
         let (resolved_url, mut html) = client.fetch_text(_url, "text/html", None)?;
         let mut final_url = resolved_url;
         let mut challenge_solved = false;

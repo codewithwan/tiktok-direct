@@ -1,6 +1,7 @@
 import { number, pickUrl, string } from "./values.js";
 
 export function normalize(inputUrl, finalUrl, username, source, item = {}) {
+  item = item || {};
   const author = item?.author || {};
   const stats = item?.stats || {};
   const statsV2 = item?.statsV2 || {};
@@ -24,6 +25,7 @@ export function normalize(inputUrl, finalUrl, username, source, item = {}) {
     timestamp: string(item.createTime),
     webpage_url: finalUrl,
     source,
+    raw_item: item,
     media: media(video),
     music: { title: string(music.title), play_url: pickUrl(music.playUrl) },
   };

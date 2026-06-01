@@ -122,12 +122,15 @@ def to_summary_dict(metadata: Dict[str, Any]) -> Dict[str, Any]:
 
 def _raise_mapped_exception(e: Exception) -> Any:
     msg = str(e)
-    if "invalid" in msg.lower() or "parse" in msg.lower() or "url" in msg.lower() or "builder error" in msg.lower():
+    lower = msg.lower()
+    if "invalid" in lower or "parse" in lower or "builder error" in lower:
         raise InvalidURLError(msg) from e
-    elif "challenge" in msg.lower() or "waf" in msg.lower():
-        raise ChallengeError(msg) from e
-    elif "download" in msg.lower() or "http" in msg.lower() or "network" in msg.lower():
+    elif "download" in lower or "media" in lower or "http" in lower or "network" in lower:
         raise DownloadError(msg) from e
+    elif "challenge" in lower or "waf" in lower:
+        raise ChallengeError(msg) from e
+    elif "url" in lower:
+        raise InvalidURLError(msg) from e
     else:
         raise TikTokDirectError(msg) from e
 

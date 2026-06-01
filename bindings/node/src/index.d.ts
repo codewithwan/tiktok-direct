@@ -1,5 +1,4 @@
 export interface ExtractorOptions {
-  userAgent?: string;
   acceptLanguage?: string;
   fetch?: typeof fetch;
   useOEmbed?: boolean;

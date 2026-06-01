@@ -80,6 +80,7 @@ func normalize(inputURL, finalURL, username, source string, item map[string]any)
 		"uploader_id":      str(author["id"]),
 		"webpage_url":      finalURL,
 		"source":           source,
+		"raw_item":         item,
 		"media": map[string]any{
 			"cover":         pickURL(video["cover"]),
 			"play_addr":     pickURL(video["playAddr"]),
