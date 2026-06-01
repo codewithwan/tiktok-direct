@@ -82,16 +82,21 @@ jobs:
           cd bindings/python
           python -m ruff check . || true
 
-      - name: build & install wheel
+      - name: Build & install in-place (maturin develop)
+        # maturin develop compiles the native .so and copies it directly into
+        # bindings/python/tiktok_direct/, so the local package dir IS the
+        # installed package — no wheel / sys.path shadowing issues.
         run: |
           cd bindings/python
-          python -m maturin build --release
-          pip install --force-reinstall ../../target/wheels/*.whl
+          python -m maturin develop --release
 
       - name: pytest + coverage
+        # Run from workspace root so pytest doesn't accidentally import the
+        # bare tiktok_direct/ source dir before the .so is resolved.
         run: |
-          cd bindings/python
-          python -m pytest tests/ -v --tb=short --cov=tiktok_direct --cov-report=term-missing
+          python -m pytest bindings/python/tests/ -v --tb=short \
+            --cov=tiktok_direct --cov-report=term-missing \
+            --rootdir=bindings/python
 
       - name: mypy
         run: |

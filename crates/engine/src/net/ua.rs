@@ -144,7 +144,7 @@ pub fn generate_random_profile() -> BrowserProfile {
         _ => {
             let target_os =
                 if selected_os == "windows" || selected_os == "linux" || selected_os == "android" {
-                    if (nanos >> 30) % 2 == 0 {
+                    if (nanos >> 30).is_multiple_of(2) {
                         "mac"
                     } else {
                         "ios"

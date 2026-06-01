@@ -31,7 +31,7 @@ pub fn solve_waf_cookie(html: &str) -> Option<String> {
 
 fn decode_base64(value: &str) -> Option<Vec<u8>> {
     let mut padded = value.to_string();
-    while padded.len() % 4 != 0 {
+    while !padded.len().is_multiple_of(4) {
         padded.push('=');
     }
     STANDARD.decode(padded).ok()
