@@ -1,0 +1,122 @@
+name: Daily Audit
+
+on:
+  schedule:
+    # Every day at 02:00 UTC
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# ─────────────────────────────────────────────────────────────────────────────
+jobs:
+
+  # ── Rust audit ──────────────────────────────────────────────────────────────
+  audit-rust:
+    name: Rust — cargo-audit & outdated
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ". -> target"
+
+      - name: Install cargo-audit
+        run: cargo install cargo-audit --locked
+
+      - name: Security audit
+        run: cargo audit
+        continue-on-error: true
+
+      - name: Install cargo-outdated
+        run: cargo install cargo-outdated --locked
+
+      - name: Outdated deps
+        run: cargo outdated --workspace
+        continue-on-error: true
+
+  # ── Node audit ──────────────────────────────────────────────────────────────
+  audit-node:
+    name: Node — npm audit & outdated
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: bindings/node/package.json
+
+      - name: Install deps
+        working-directory: bindings/node
+        run: npm install --prefer-offline
+
+      - name: Security audit
+        working-directory: bindings/node
+        run: npm audit --audit-level=moderate
+        continue-on-error: true
+
+      - name: Outdated packages
+        working-directory: bindings/node
+        run: npm outdated || true
+
+  # ── Python audit ────────────────────────────────────────────────────────────
+  audit-python:
+    name: Python — pip-audit & outdated
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install deps
+        run: pip install maturin mypy pytest pytest-cov ruff pip-audit
+
+      - name: Security audit
+        run: pip-audit
+        continue-on-error: true
+
+      - name: Outdated packages
+        run: pip list --outdated
+        continue-on-error: true
+
+  # ── Go audit ────────────────────────────────────────────────────────────────
+  audit-go:
+    name: Go — govulncheck & outdated
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: stable
+          cache-dependency-path: bindings/go/go.sum
+
+      - name: Download modules
+        working-directory: bindings/go
+        run: go mod download
+
+      - name: Install govulncheck
+        run: go install golang.org/x/vuln/cmd/govulncheck@latest
+
+      - name: Vulnerability check
+        working-directory: bindings/go
+        run: govulncheck ./...
+        continue-on-error: true
+
+      - name: Outdated modules
+        working-directory: bindings/go
+        run: go list -u -m all || true
