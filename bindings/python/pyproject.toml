@@ -28,3 +28,8 @@ Repository = "https://github.com/codewithwan/tiktok-direct"
 [tool.maturin]
 module-name = "tiktok_direct"
 features = ["pyo3/extension-module"]
+
+[tool.mypy]
+explicit_package_bases = true
+mypy_path = "."
+

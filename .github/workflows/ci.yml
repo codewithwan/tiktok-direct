@@ -70,4 +70,4 @@ jobs:
       - name: Run Mypy Typecheck
         run: |
           cd bindings/python
-          python -m mypy tiktok_direct tests examples
+          python -m mypy tests examples

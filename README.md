@@ -1,59 +1,63 @@
 # tiktok-direct
 
-`tiktok-direct` is a library-first workspace for extracting public TikTok video metadata. It is designed around one shared Rust implementation package with thin language bindings on top.
-
-## Overview
-
-This repository is meant to be consumed as libraries, not as a CLI app. The extraction logic lives in one Rust implementation package, while language-specific bindings expose the same behavior to downstream consumers.
+`tiktok-direct` is a high-performance, library-first workspace for extracting public TikTok video metadata and media. It is designed around a single shared, highly-modular Rust engine core with thin, zero-dependency language bindings on top.
 
 ## Repository Layout
 
-- `crates/engine` - shared Rust implementation package
-- `bindings/python` - Python binding built with PyO3 and maturin
-- `bindings/node` - reserved for a future Node.js binding
-- `bindings/go` - reserved for a future Go binding
+* **`crates/engine`**: Shared core Rust package using a modular subsystem design (`net/` and `parser/`).
+* **`bindings/python`**: Thin, highly-optimized Python binding powered by PyO3, Maturin, and asyncio.
+* **`bindings/node`**: (Future expansion) Reserved for high-speed Node.js bindings.
+* **`bindings/go`**: (Future expansion) Reserved for native Go bindings.
 
-## Design Goals
+---
 
-- Keep extraction, parsing, normalization, and media discovery in one shared Rust implementation package.
-- Expose the same public behavior through language bindings.
-- Use only public TikTok page responses, public oEmbed data, and temporary challenge cookies derived from public challenge pages.
-- Avoid login flows, user cookies, and authenticated scraping.
-- Keep the repository focused on reusable library packages.
+## Key Framework Features
 
-## Current Status
+* **Dynamic WAF Evasion / Rotation**: Integrates organic browser profile simulation (User-Agent, Accept-Language, Sec-CH-UA client-hints) driven by high-entropy nanosecond resolution.
+* **Native Challenge Solving**: Built-in, high-speed SHA-256 cookie challenge solver to transparently bypass TikTok's Web Application Firewall (WAF).
+* **Asynchronous Execution**: Fully native Python `asyncio` wrappers supporting non-blocking concurrent events inside modern web apps (FastAPI, Sanic, etc.).
+* **Parallel Batch Pipelines**: High-speed concurrent scraping leveraging robust worker ThreadPools with isolated error mappings.
+* **Clean Exception Mappings**: Native Python exception hierarchy (`InvalidURLError`, `ChallengeError`, `DownloadError`) for predictable error handling.
 
-- Public TikTok video metadata extraction is implemented in the Rust implementation package.
-- Public web challenge handling is implemented.
-- Rehydration JSON parsing is implemented.
-- Public oEmbed fallback is implemented.
-- MP4 and MP3 download support is implemented.
-- The Python binding is implemented.
-- Unit tests, line-count checks, and an ignored live public test are present.
+---
 
-## Rust Implementation
+## Getting Started
 
-The shared Rust package lives in `crates/engine` and exposes the implementation used by the bindings.
+### 1. Rust Engine Core
+To consume the raw extraction and download components directly inside a Rust application, add it to your dependencies:
 
-- resolving public TikTok URLs
-- handling public web challenge pages
-- parsing TikTok rehydration JSON and public metadata
-- normalizing extracted fields into typed Rust data
-- discovering MP4, MP3, and thumbnail media URLs
-- downloading public media from the normalized extraction result
+```toml
+[dependencies]
+tiktok-direct-engine = { package = "engine", path = "crates/engine" }
+```
 
-It is the implementation layer used by the language bindings and by downstream Rust consumers that want the extraction logic directly.
+```rust
+use tiktok_direct_engine::{TikTokExtractor, MediaKind, download_media};
 
-## Package Documentation
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let extractor = TikTokExtractor::new();
+    let metadata = extractor.extract("https://vt.tiktok.com/ZSxvYRvoR/")?;
+    println!("Title: {:?}", metadata.title);
+    Ok(())
+}
+```
 
-Implementation details, local build steps, and package-specific usage examples live in the package-level README files:
+### 2. Python Language Binding
+To compile and bind the package locally into your active Python environment:
 
-- [Python binding README](bindings/python/README.md)
+```powershell
+cd bindings/python
+python -m maturin build --release
+python -m pip install --force-reinstall ..\..\target\wheels\tiktok_direct-0.1.0-cp312-cp312-win_amd64.whl
+```
 
-## Public Data Policy
+For advanced API integrations, examples, and async configurations, see the [Python Package Documentation](bindings/python/README.md).
 
-- No login flow.
-- No user-provided cookies.
-- No authenticated scraping.
-- Public TikTok page data and public oEmbed data only.
-- Temporary challenge cookies may be generated from public challenge pages when TikTok serves a challenge response.
+---
+
+## Quality Assurance & Verification
+Our pipeline uses strict validation mechanisms to ensure codebase integrity:
+* **Cargo Tests**: Automated execution of all Rust engine and integration suites (`cargo test --workspace`).
+* **Python Tests**: Comprehensive unit tests covering async offloading, concurrent batching, and stub mocks (`python -m unittest discover`).
+* **Static Verification**: Strict type assertions through mypy (`python -m mypy tests examples`).
+* **Automatic Code Formatting**: Consolidated code formatting checks integrated through Ruff pre-commit tools.
